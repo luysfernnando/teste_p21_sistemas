@@ -121,4 +121,21 @@ body {
     .table-responsive {
         margin-bottom: 1rem;
     }
+}
+
+/* Cards de Produtos */
+.card-img-top img {
+    object-fit: cover;
+    height: 200px;
+    width: 100%;
+}
+
+/* Formulários */
+.form-label {
+    font-weight: 500;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
 } 

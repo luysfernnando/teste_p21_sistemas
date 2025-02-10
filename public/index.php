@@ -25,9 +25,12 @@ $routes = [
     'clientes/novo' => ['controller' => 'CustomerController', 'action' => 'create'],
     'clientes/editar/(\d+)' => ['controller' => 'CustomerController', 'action' => 'edit'],
     'clientes/excluir/(\d+)' => ['controller' => 'CustomerController', 'action' => 'delete'],
+    'produtos' => ['controller' => 'ProductController', 'action' => 'index'],
+    'produtos/novo' => ['controller' => 'ProductController', 'action' => 'create'],
+    'produtos/editar/(\d+)' => ['controller' => 'ProductController', 'action' => 'edit'],
+    'produtos/excluir/(\d+)' => ['controller' => 'ProductController', 'action' => 'delete'],
     'pedidos' => ['controller' => 'OrderController', 'action' => 'index'],
     'pedidos/novo' => ['controller' => 'OrderController', 'action' => 'create'],
-    'produtos' => ['controller' => 'ProductController', 'action' => 'index'],
     'integracao' => ['controller' => 'IntegrationController', 'action' => 'index']
 ];
 
