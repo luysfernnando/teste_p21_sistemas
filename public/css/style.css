@@ -5,8 +5,13 @@ body {
     flex-direction: column;
 }
 
+main {
+    flex: 1 0 auto;
+    padding-bottom: 80px; /* Espaço para o footer fixo */
+}
+
 .footer {
-    margin-top: auto;
+    flex-shrink: 0;
 }
 
 /* Navbar */
@@ -47,6 +52,7 @@ body {
 /* Tabelas */
 .table th {
     background-color: #f8f9fa;
+    font-weight: 500;
 }
 
 .table-hover tbody tr:hover {
@@ -81,7 +87,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     z-index: 9999;
 }
 
@@ -94,17 +100,18 @@ body {
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
+    width: 3rem;
+    height: 3rem;
+    border: 0.25rem solid #dee2e6;
+    border-right-color: #007bff;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: loading-spinner 1s linear infinite;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes loading-spinner {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Responsividade */
