@@ -1,0 +1,22 @@
+{
+    "name": "loja-magica/sistema",
+    "description": "Sistema de gestão de clientes e pedidos da Loja Mágica de Tecnologia",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpoffice/phpspreadsheet": "^1.29",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Loja Mágica de Tecnologia",
+            "email": "contato@lojamagica.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}

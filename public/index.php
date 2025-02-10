@@ -1,4 +1,11 @@
 <?php
+ob_start();
+session_start();
+
+error_log("Request URI: " . $_SERVER['REQUEST_URI']);
+error_log("Request Method: " . $_SERVER['REQUEST_METHOD']);
+error_log("POST Data: " . print_r($_POST, true));
+
 require_once __DIR__ . '/../src/config/config.php';
 require_once ROOT_DIR . '/src/controllers/BaseController.php';
 
@@ -15,6 +22,9 @@ $routes = [
     '' => ['controller' => 'HomeController', 'action' => 'index'],
     'clientes' => ['controller' => 'CustomerController', 'action' => 'index'],
     'clientes/importar' => ['controller' => 'CustomerController', 'action' => 'import'],
+    'clientes/novo' => ['controller' => 'CustomerController', 'action' => 'create'],
+    'clientes/editar/(\d+)' => ['controller' => 'CustomerController', 'action' => 'edit'],
+    'clientes/excluir/(\d+)' => ['controller' => 'CustomerController', 'action' => 'delete'],
     'pedidos' => ['controller' => 'OrderController', 'action' => 'index'],
     'pedidos/novo' => ['controller' => 'OrderController', 'action' => 'create'],
     'produtos' => ['controller' => 'ProductController', 'action' => 'index'],
@@ -22,16 +32,23 @@ $routes = [
 ];
 
 // Verificar se a rota existe
-if (!isset($routes[$url])) {
+$routeFound = false;
+foreach ($routes as $pattern => $route) {
+    $pattern = str_replace('/', '\/', $pattern);
+    if (preg_match('/^' . $pattern . '$/', $url, $matches)) {
+        array_shift($matches); // Remove o match completo
+        $routeFound = true;
+        $controllerName = $route['controller'];
+        $actionName = $route['action'];
+        break;
+    }
+}
+
+if (!$routeFound) {
     header("HTTP/1.0 404 Not Found");
     require_once TEMPLATE_DIR . '/404.php';
     exit;
 }
-
-// Obter controller e action
-$route = $routes[$url];
-$controllerName = $route['controller'];
-$actionName = $route['action'];
 
 // Carregar o controller
 $controllerFile = ROOT_DIR . "/src/controllers/{$controllerName}.php";
@@ -48,5 +65,5 @@ if (!method_exists($controller, $actionName)) {
     die("Action não encontrada: {$actionName}");
 }
 
-// Executar a action
-$controller->$actionName(); 
+// Executar a action com os parâmetros capturados da URL
+$controller->$actionName(...$matches); 

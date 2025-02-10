@@ -23,6 +23,9 @@ abstract class BaseController {
     }
 
     protected function redirect($url) {
+        if (DEBUG_MODE) {
+            error_log('Redirecting to: ' . APP_URL . '/' . $url);
+        }
         header("Location: " . APP_URL . "/{$url}");
         exit;
     }
@@ -34,6 +37,9 @@ abstract class BaseController {
     }
 
     protected function isPost() {
+        if (DEBUG_MODE) {
+            error_log('Request Method: ' . $_SERVER['REQUEST_METHOD']);
+        }
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 

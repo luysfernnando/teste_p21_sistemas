@@ -139,7 +139,8 @@
                                 <tr>
                                     <th>Nome</th>
                                     <th>Email</th>
-                                    <th>Telefone</th>
+                                    <th>Data Último Pedido</th>
+                                    <th>Valor Último Pedido</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -147,7 +148,8 @@
                                     <tr>
                                         <td><?= htmlspecialchars($customer['name']) ?></td>
                                         <td><?= htmlspecialchars($customer['email']) ?></td>
-                                        <td><?= htmlspecialchars($customer['phone']) ?></td>
+                                        <td><?= $customer['last_order_date'] ? date('d/m/Y', strtotime($customer['last_order_date'])) : '-' ?></td>
+                                        <td><?= $customer['last_order_amount'] ? 'R$ ' . number_format($customer['last_order_amount'], 2, ',', '.') : '-' ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
