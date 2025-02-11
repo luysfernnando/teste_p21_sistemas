@@ -4,6 +4,8 @@
 require_once __DIR__ . '/../src/config/config.php';
 require_once ROOT_DIR . '/src/utils/Migration.php';
 
+use src\utils\Migration;
+
 $migration = new Migration();
 
 $command = $argv[1] ?? 'help';

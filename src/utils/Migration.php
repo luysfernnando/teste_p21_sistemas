@@ -1,5 +1,12 @@
 <?php
 
+namespace src\utils;
+
+use PDO;
+use PDOException;
+use Exception;
+use Database;
+
 class Migration {
     private $db;
     private $migrationsPath;
