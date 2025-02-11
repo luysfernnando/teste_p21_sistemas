@@ -16,7 +16,7 @@ abstract class BaseController {
         require_once TEMPLATE_DIR . '/layouts/header.php';
         
         // Incluir o template específico
-        require_once TEMPLATE_DIR . "/pages/{$view}.php";
+        require_once TEMPLATE_DIR . '/' . $view . '.php';
         
         // Incluir o footer
         require_once TEMPLATE_DIR . '/layouts/footer.php';
@@ -90,5 +90,25 @@ abstract class BaseController {
             return $flash;
         }
         return null;
+    }
+
+    protected function getStatusLabel($status) {
+        $labels = [
+            'pending' => 'Pendente',
+            'processing' => 'Em Processamento',
+            'completed' => 'Concluído',
+            'cancelled' => 'Cancelado'
+        ];
+        return $labels[$status] ?? $status;
+    }
+
+    protected function getStatusColor($status) {
+        $colors = [
+            'pending' => 'warning',
+            'processing' => 'info',
+            'completed' => 'success',
+            'cancelled' => 'danger'
+        ];
+        return $colors[$status] ?? 'secondary';
     }
 } 

@@ -14,7 +14,7 @@ class HomeController extends BaseController {
         $latest_orders = $this->db->query("
             SELECT o.*, c.name as customer_name 
             FROM orders o 
-            JOIN customers c ON o.customer_id = c.id 
+            LEFT JOIN customers c ON o.customer_id = c.id 
             ORDER BY o.created_at DESC 
             LIMIT 5
         ")->fetchAll();
@@ -33,7 +33,7 @@ class HomeController extends BaseController {
             LIMIT 5
         ")->fetchAll();
 
-        $this->render('home/index', [
+        $this->render('pages/home/index', [
             'stats' => $stats,
             'latest_orders' => $latest_orders,
             'latest_customers' => $latest_customers,

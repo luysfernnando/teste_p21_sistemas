@@ -31,6 +31,9 @@ $routes = [
     'produtos/excluir/(\d+)' => ['controller' => 'ProductController', 'action' => 'delete'],
     'pedidos' => ['controller' => 'OrderController', 'action' => 'index'],
     'pedidos/novo' => ['controller' => 'OrderController', 'action' => 'create'],
+    'pedidos/importar' => ['controller' => 'OrderController', 'action' => 'import'],
+    'pedidos/view/(\d+)' => ['controller' => 'OrderController', 'action' => 'view'],
+    'pedidos/status/(\d+)' => ['controller' => 'OrderController', 'action' => 'updateStatus'],
     'integracao' => ['controller' => 'IntegrationController', 'action' => 'index']
 ];
 

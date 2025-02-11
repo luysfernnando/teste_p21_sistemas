@@ -3,7 +3,7 @@
 class CustomerController extends BaseController {
     public function index() {
         $customers = $this->db->query("SELECT * FROM customers ORDER BY name")->fetchAll();
-        $this->render('customers/index', ['customers' => $customers]);
+        $this->render('pages/customers/index', ['customers' => $customers]);
     }
 
     public function import() {
@@ -182,7 +182,7 @@ class CustomerController extends BaseController {
             return;
         }
 
-        $this->render('customers/import');
+        $this->render('pages/customers/import');
     }
 
     public function create() {
@@ -199,14 +199,14 @@ class CustomerController extends BaseController {
             
             if (!empty($errors)) {
                 $this->setFlash('error', 'Por favor, preencha todos os campos obrigatórios.');
-                $this->render('customers/create', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/create', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
             if (!$this->validateEmail($data['email'])) {
                 $errors['email'] = 'Email inválido.';
                 $this->setFlash('error', 'Email inválido.');
-                $this->render('customers/create', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/create', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
@@ -220,12 +220,12 @@ class CustomerController extends BaseController {
                 } else {
                     $this->setFlash('error', 'Erro ao cadastrar cliente.');
                 }
-                $this->render('customers/create', ['data' => $data]);
+                $this->render('pages/customers/create', ['data' => $data]);
             }
             return;
         }
 
-        $this->render('customers/create');
+        $this->render('pages/customers/create');
     }
 
     public function edit($id) {
@@ -250,14 +250,14 @@ class CustomerController extends BaseController {
             
             if (!empty($errors)) {
                 $this->setFlash('error', 'Por favor, preencha todos os campos obrigatórios.');
-                $this->render('customers/edit', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/edit', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
             if (!$this->validateEmail($data['email'])) {
                 $errors['email'] = 'Email inválido.';
                 $this->setFlash('error', 'Email inválido.');
-                $this->render('customers/edit', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/edit', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
@@ -265,14 +265,14 @@ class CustomerController extends BaseController {
             if (!empty($data['last_order_date']) && !$this->validateDate($data['last_order_date'])) {
                 $errors['last_order_date'] = 'Data inválida.';
                 $this->setFlash('error', 'Data do último pedido inválida.');
-                $this->render('customers/edit', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/edit', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
             if (!empty($data['last_order_amount']) && !is_numeric($data['last_order_amount'])) {
                 $errors['last_order_amount'] = 'Valor inválido.';
                 $this->setFlash('error', 'Valor do último pedido inválido.');
-                $this->render('customers/edit', ['data' => $data, 'errors' => $errors]);
+                $this->render('pages/customers/edit', ['data' => $data, 'errors' => $errors]);
                 return;
             }
 
@@ -286,12 +286,12 @@ class CustomerController extends BaseController {
                 } else {
                     $this->setFlash('error', 'Erro ao atualizar cliente.');
                 }
-                $this->render('customers/edit', ['data' => $data]);
+                $this->render('pages/customers/edit', ['data' => $data]);
             }
             return;
         }
 
-        $this->render('customers/edit', ['data' => $customer]);
+        $this->render('pages/customers/edit', ['data' => $customer]);
     }
 
     private function validateDate($date) {
