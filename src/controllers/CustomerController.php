@@ -109,19 +109,71 @@ class CustomerController extends BaseController {
 
                     $data = [
                         'name' => $name,
-                        'email' => isset($row[2]) && !empty(trim((string)$row[2])) ? trim((string)$row[2]) : '-',
+                        'email' => isset($row[2]) && !empty(trim((string)$row[2])) ? trim((string)$row[2]) : null,
                         'order_history' => isset($row[3]) && !empty(trim((string)$row[3])) ? trim((string)$row[3]) : '-',
                         'last_order_date' => $lastOrderDate,
                         'last_order_amount' => $lastOrderAmount
                     ];
 
-                    // Validação básica de email apenas se não for o placeholder
-                    if ($data['email'] !== '-' && !$this->validateEmail($data['email'])) {
-                        $warnings[] = "Linha " . ($index + 2) . ": Email inválido - usando placeholder";
-                        $data['email'] = '-';
+                    // Validação básica de email apenas se não for nulo
+                    if ($data['email'] !== null && !$this->validateEmail($data['email'])) {
+                        $warnings[] = "Linha " . ($index + 2) . ": Email inválido - gerando email único";
+                        $data['email'] = null;
                     }
 
                     try {
+                        // Verifica se o cliente já existe por email
+                        if ($data['email'] !== null) {
+                            $existingCustomer = $this->db->query(
+                                "SELECT id FROM customers WHERE email = ?", 
+                                [$data['email']]
+                            )->fetch();
+
+                            if ($existingCustomer) {
+                                // Atualiza o cliente existente
+                                $this->db->update(
+                                    'customers',
+                                    $data,
+                                    'id = ?',
+                                    [$existingCustomer['id']]
+                                );
+                                $warnings[] = "Linha " . ($index + 2) . ": Cliente já existente - registro atualizado";
+                                $imported++;
+                                continue;
+                            }
+                        }
+                        // Se não encontrou por email, tenta encontrar por nome (apenas se o nome não for placeholder)
+                        else if ($data['name'] !== '-') {
+                            $existingCustomer = $this->db->query(
+                                "SELECT id, email FROM customers WHERE name = ? AND email LIKE '%@magia.com'", 
+                                [$data['name']]
+                            )->fetch();
+
+                            if ($existingCustomer) {
+                                // Usa o email existente ao invés de gerar um novo
+                                $data['email'] = $existingCustomer['email'];
+                                
+                                // Atualiza o cliente existente
+                                $this->db->update(
+                                    'customers',
+                                    $data,
+                                    'id = ?',
+                                    [$existingCustomer['id']]
+                                );
+                                $warnings[] = "Linha " . ($index + 2) . ": Cliente encontrado por nome - registro atualizado";
+                                $imported++;
+                                continue;
+                            }
+                        }
+
+                        // Se não encontrou cliente existente, gera um email único
+                        if ($data['email'] === null) {
+                            $timestamp = time();
+                            $random = substr(md5(uniqid()), 0, 6);
+                            $data['email'] = "{$timestamp}_{$random}@magia.com";
+                        }
+
+                        // Insere novo cliente
                         $this->db->insert('customers', $data);
                         $imported++;
                         
@@ -129,20 +181,13 @@ class CustomerController extends BaseController {
                         if ($data['name'] === '-') {
                             $warnings[] = "Linha " . ($index + 2) . ": Nome em branco - usando placeholder";
                         }
-                        if ($data['email'] === '-') {
-                            $warnings[] = "Linha " . ($index + 2) . ": Email em branco ou inválido - usando placeholder";
-                        }
                         if ($data['order_history'] === '-') {
                             $warnings[] = "Linha " . ($index + 2) . ": Histórico de pedidos em branco - usando placeholder";
                         }
                         
                     } catch (PDOException $e) {
-                        if ($e->getCode() == 23000) { // Duplicate entry
-                            $warnings[] = "Linha " . ($index + 2) . ": Email já cadastrado - registro ignorado";
-                        } else {
-                            $errors[] = "Linha " . ($index + 2) . ": Erro ao importar";
-                            error_log("Erro ao importar cliente: " . $e->getMessage());
-                        }
+                        $errors[] = "Linha " . ($index + 2) . ": Erro ao importar - " . $e->getMessage();
+                        error_log("Erro ao importar cliente: " . $e->getMessage());
                     }
                 }
 

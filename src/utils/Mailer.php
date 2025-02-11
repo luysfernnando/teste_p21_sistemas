@@ -1,7 +1,10 @@
 <?php
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
 
 class Mailer {
     private static $instance = null;
@@ -167,5 +170,5 @@ class Mailer {
     }
 
     private function __clone() {}
-    private function __wakeup() {}
+    public function __wakeup() {}
 } 

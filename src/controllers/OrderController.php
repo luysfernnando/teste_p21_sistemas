@@ -118,7 +118,7 @@ class OrderController extends BaseController {
                 $this->xmlIntegration->validateXml($xmlString, $schemaPath);
 
                 // Processa o XML
-                $this->xmlIntegration->processOrderXml($xmlString, 'Manual Import');
+                $this->xmlIntegration->processOrderXml($xmlString, 'Importação Manual');
 
                 $this->setFlash('success', 'Pedidos importados com sucesso!');
                 $this->redirect('pedidos');
@@ -136,9 +136,11 @@ class OrderController extends BaseController {
 
     public function view($id) {
         $order = $this->db->query("
-            SELECT o.*, c.name as customer_name, c.email as customer_email 
+            SELECT o.*, 
+                   COALESCE(c.name, o.store_name) as customer_name,
+                   c.email as customer_email 
             FROM orders o 
-            JOIN customers c ON o.customer_id = c.id 
+            LEFT JOIN customers c ON o.customer_id = c.id 
             WHERE o.id = ?
         ", [$id])->fetch();
 
@@ -156,9 +158,17 @@ class OrderController extends BaseController {
             WHERE oi.order_id = ?
         ", [$id])->fetchAll();
 
+        // Busca o histórico de status
+        $statusHistory = $this->db->query("
+            SELECT * FROM order_status_history 
+            WHERE order_id = ? 
+            ORDER BY created_at ASC
+        ", [$id])->fetchAll();
+
         $this->render('pages/orders/view', [
             'order' => $order,
-            'items' => $items
+            'items' => $items,
+            'statusHistory' => $statusHistory
         ]);
     }
 
@@ -169,7 +179,10 @@ class OrderController extends BaseController {
         }
 
         $status = $this->getPost('status');
-        $validStatus = ['pending', 'processing', 'completed', 'cancelled'];
+        $customerEmail = $this->getPost('customer_email');
+        $updateCustomer = $this->getPost('update_customer');
+        
+        $validStatus = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
         if (!in_array($status, $validStatus)) {
             $this->setFlash('error', 'Status inválido');
@@ -178,30 +191,63 @@ class OrderController extends BaseController {
         }
 
         try {
+            $this->db->beginTransaction();
+
+            // Atualiza o status do pedido
             $this->db->update('orders', 
                 ['status' => $status],
                 'id = ?',
                 [$id]
             );
 
-            // Busca informações do pedido e cliente para o e-mail
+            // Registra no histórico
+            $this->db->insert('order_status_history', [
+                'order_id' => $id,
+                'status' => $status,
+                'notes' => 'Status atualizado via sistema'
+            ]);
+
+            // Busca informações do pedido e cliente
             $order = $this->db->query("
-                SELECT o.*, c.* 
+                SELECT o.*, 
+                       COALESCE(c.name, o.store_name) as customer_name,
+                       c.email as customer_email,
+                       c.id as customer_id
                 FROM orders o 
-                JOIN customers c ON o.customer_id = c.id 
+                LEFT JOIN customers c ON o.customer_id = c.id 
                 WHERE o.id = ?
             ", [$id])->fetch();
 
-            // Envia e-mail de atualização de status
-            try {
-                Mailer::getInstance()->sendOrderStatusUpdate($order);
-            } catch (Exception $e) {
-                error_log("Erro ao enviar e-mail de atualização de status: " . $e->getMessage());
+            // Se foi fornecido um novo e-mail no modal
+            if ($customerEmail) {
+                // Se solicitado, atualiza o cadastro do cliente
+                if ($updateCustomer && $order['customer_id']) {
+                    $this->db->update(
+                        'customers',
+                        ['email' => $customerEmail],
+                        'id = ?',
+                        [$order['customer_id']]
+                    );
+                }
+                
+                // Usa o e-mail fornecido para enviar a notificação
+                $order['customer_email'] = $customerEmail;
             }
 
+            // Envia e-mail de atualização de status se houver um e-mail
+            if ($order['customer_email']) {
+                try {
+                    Mailer::getInstance()->sendOrderStatusUpdate($order);
+                } catch (Exception $e) {
+                    error_log("Erro ao enviar e-mail de atualização de status: " . $e->getMessage());
+                }
+            }
+
+            $this->db->commit();
             $this->setFlash('success', 'Status atualizado com sucesso!');
 
         } catch (Exception $e) {
+            $this->db->rollBack();
             $this->setFlash('error', 'Erro ao atualizar status: ' . $e->getMessage());
         }
 

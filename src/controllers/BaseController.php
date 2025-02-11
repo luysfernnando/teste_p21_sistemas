@@ -96,7 +96,8 @@ abstract class BaseController {
         $labels = [
             'pending' => 'Pendente',
             'processing' => 'Em Processamento',
-            'completed' => 'Concluído',
+            'shipped' => 'Enviado',
+            'delivered' => 'Entregue',
             'cancelled' => 'Cancelado'
         ];
         return $labels[$status] ?? $status;
@@ -106,8 +107,27 @@ abstract class BaseController {
         $colors = [
             'pending' => 'warning',
             'processing' => 'info',
-            'completed' => 'success',
+            'shipped' => 'primary',
+            'delivered' => 'success',
             'cancelled' => 'danger'
+        ];
+        return $colors[$status] ?? 'secondary';
+    }
+
+    protected function getIntegrationStatusLabel($status) {
+        $labels = [
+            'pending' => 'Pendente',
+            'processed' => 'Processado',
+            'failed' => 'Falhou'
+        ];
+        return $labels[$status] ?? $status;
+    }
+
+    protected function getIntegrationStatusColor($status) {
+        $colors = [
+            'pending' => 'warning',
+            'processed' => 'success',
+            'failed' => 'danger'
         ];
         return $colors[$status] ?? 'secondary';
     }

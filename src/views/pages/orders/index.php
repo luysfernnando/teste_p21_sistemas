@@ -59,7 +59,7 @@
                                             <a href="/pedidos/view/<?= $order['id'] ?>" 
                                                class="btn btn-sm btn-outline-primary"
                                                title="Visualizar">
-                                                <i class="bi bi-eye"></i>
+                                                <i class="fas fa-eye"></i>
                                             </a>
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split"
@@ -72,15 +72,23 @@
                                                     <form action="/pedidos/status/<?= $order['id'] ?>" method="post" class="d-inline">
                                                         <input type="hidden" name="status" value="processing">
                                                         <button type="submit" class="dropdown-item">
-                                                            <i class="bi bi-play-circle"></i> Iniciar Processamento
+                                                            <i class="fas fa-play-circle"></i> Iniciar Processamento
                                                         </button>
                                                     </form>
                                                 </li>
                                                 <li>
                                                     <form action="/pedidos/status/<?= $order['id'] ?>" method="post" class="d-inline">
-                                                        <input type="hidden" name="status" value="completed">
+                                                        <input type="hidden" name="status" value="shipped">
                                                         <button type="submit" class="dropdown-item">
-                                                            <i class="bi bi-check-circle"></i> Marcar como Concluído
+                                                            <i class="fas fa-truck"></i> Marcar como Enviado
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="/pedidos/status/<?= $order['id'] ?>" method="post" class="d-inline">
+                                                        <input type="hidden" name="status" value="delivered">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-check-circle"></i> Marcar como Entregue
                                                         </button>
                                                     </form>
                                                 </li>
@@ -88,7 +96,7 @@
                                                     <form action="/pedidos/status/<?= $order['id'] ?>" method="post" class="d-inline">
                                                         <input type="hidden" name="status" value="cancelled">
                                                         <button type="submit" class="dropdown-item text-danger">
-                                                            <i class="bi bi-x-circle"></i> Cancelar Pedido
+                                                            <i class="fas fa-times-circle"></i> Cancelar Pedido
                                                         </button>
                                                     </form>
                                                 </li>

@@ -16,7 +16,7 @@ class IntegrationController extends BaseController {
             LIMIT 50
         ")->fetchAll();
 
-        $this->render('integration/index', ['integrations' => $integrations]);
+        $this->render('pages/integration/index', ['integrations' => $integrations]);
     }
 
     public function receive() {
@@ -39,19 +39,41 @@ class IntegrationController extends BaseController {
             // Obtém o nome do parceiro do header
             $partnerName = $_SERVER['HTTP_X_PARTNER_NAME'] ?? 'Unknown';
 
-            // Valida o XML contra o schema
-            $schemaPath = ROOT_DIR . '/src/utils/schemas/orders.xsd';
-            $this->xmlIntegration->validateXml($xmlString, $schemaPath);
+            // Registra a tentativa de integração
+            $integrationId = $this->db->insert('partner_integrations', [
+                'partner_name' => $partnerName,
+                'xml_data' => $xmlString,
+                'status' => 'pending'
+            ]);
 
-            // Processa o XML
-            $this->xmlIntegration->processOrderXml($xmlString, $partnerName);
+            try {
+                // Valida o XML contra o schema
+                $schemaPath = ROOT_DIR . '/src/utils/schemas/orders.xsd';
+                $this->xmlIntegration->validateXml($xmlString, $schemaPath);
 
-            // Retorna sucesso
-            header('Content-Type: application/xml');
-            echo $this->xmlIntegration->generateResponseXml(
-                true,
-                'XML processado com sucesso'
-            );
+                // Processa o XML
+                $this->xmlIntegration->processOrderXml($xmlString, $partnerName, $integrationId);
+
+                // Retorna sucesso
+                header('Content-Type: application/xml');
+                echo $this->xmlIntegration->generateResponseXml(
+                    true,
+                    'XML processado com sucesso'
+                );
+
+            } catch (Exception $e) {
+                // Atualiza o status da integração para falha
+                $this->db->update('partner_integrations',
+                    [
+                        'status' => 'failed',
+                        'processed_at' => date('Y-m-d H:i:s'),
+                        'error_message' => $e->getMessage()
+                    ],
+                    'id = ?',
+                    [$integrationId]
+                );
+                throw $e;
+            }
 
         } catch (Exception $e) {
             // Log do erro
@@ -79,7 +101,7 @@ class IntegrationController extends BaseController {
             return;
         }
 
-        $this->render('integration/view', ['integration' => $integration]);
+        $this->render('pages/integration/view', ['integration' => $integration]);
     }
 
     public function reprocess($id) {

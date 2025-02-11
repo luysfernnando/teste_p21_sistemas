@@ -24,14 +24,16 @@ class XmlIntegration {
     /**
      * Processa um arquivo XML de pedidos
      */
-    public function processOrderXml($xmlString, $partnerName) {
+    public function processOrderXml($xmlString, $partnerName, $integrationId = null) {
         try {
-            // Salva o XML no banco
-            $integrationId = $this->db->insert('partner_integrations', [
-                'partner_name' => $partnerName,
-                'xml_data' => $xmlString,
-                'status' => 'pending'
-            ]);
+            // Se não foi fornecido um ID de integração, cria um novo registro
+            if ($integrationId === null) {
+                $integrationId = $this->db->insert('partner_integrations', [
+                    'partner_name' => $partnerName,
+                    'xml_data' => $xmlString,
+                    'status' => 'pending'
+                ]);
+            }
 
             // Carrega o XML
             $xml = new SimpleXMLElement($xmlString);
@@ -51,9 +53,13 @@ class XmlIntegration {
             return true;
         } catch (Exception $e) {
             // Em caso de erro, marca a integração como falha
-            if (isset($integrationId)) {
+            if ($integrationId) {
                 $this->db->update('partner_integrations',
-                    ['status' => 'failed', 'processed_at' => date('Y-m-d H:i:s')],
+                    [
+                        'status' => 'failed',
+                        'processed_at' => date('Y-m-d H:i:s'),
+                        'error_message' => $e->getMessage()
+                    ],
                     'id = ?',
                     [$integrationId]
                 );

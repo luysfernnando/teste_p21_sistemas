@@ -15,6 +15,20 @@
 </footer>
 
 <style>
+/* Estilos para as mensagens flash */
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Estilos do footer */
 .footer {
     width: 100%;
     background-color: #fff;

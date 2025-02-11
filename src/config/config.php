@@ -38,6 +38,9 @@ define('DEBUG_MODE', true);
 error_reporting(DEBUG_MODE ? E_ALL : 0);
 ini_set('display_errors', DEBUG_MODE ? 1 : 0);
 
+// Configuração do fuso horário
+date_default_timezone_set('America/Sao_Paulo');
+
 // Incluir a classe Database
 require_once __DIR__ . '/Database.php';
 

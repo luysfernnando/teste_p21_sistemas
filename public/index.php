@@ -34,7 +34,11 @@ $routes = [
     'pedidos/importar' => ['controller' => 'OrderController', 'action' => 'import'],
     'pedidos/view/(\d+)' => ['controller' => 'OrderController', 'action' => 'view'],
     'pedidos/status/(\d+)' => ['controller' => 'OrderController', 'action' => 'updateStatus'],
-    'integracao' => ['controller' => 'IntegrationController', 'action' => 'index']
+    'integracao' => ['controller' => 'IntegrationController', 'action' => 'index'],
+    'integracao/receber' => ['controller' => 'IntegrationController', 'action' => 'receive'],
+    'integracao/visualizar/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'view'],
+    'integracao/reprocessar/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'reprocess'],
+    'integracao/excluir/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'delete']
 ];
 
 // Verificar se a rota existe

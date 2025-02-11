@@ -127,25 +127,15 @@
 
                 <h6>Exemplo de XML</h6>
                 <pre class="bg-light p-3 rounded mb-3"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;orders&gt;
-    &lt;order&gt;
-        &lt;customer&gt;
-            &lt;name&gt;João Silva&lt;/name&gt;
-            &lt;email&gt;joao@email.com&lt;/email&gt;
-            &lt;phone&gt;(11) 98765-4321&lt;/phone&gt;
-            &lt;address&gt;Rua Exemplo, 123&lt;/address&gt;
-        &lt;/customer&gt;
-        &lt;items&gt;
-            &lt;item&gt;
-                &lt;name&gt;Produto Mágico&lt;/name&gt;
-                &lt;description&gt;Descrição do produto&lt;/description&gt;
-                &lt;quantity&gt;2&lt;/quantity&gt;
-                &lt;price&gt;99.90&lt;/price&gt;
-            &lt;/item&gt;
-        &lt;/items&gt;
-        &lt;total&gt;199.80&lt;/total&gt;
-    &lt;/order&gt;
-&lt;/orders&gt;</code></pre>
+&lt;pedidos&gt;
+    &lt;pedido&gt;
+        &lt;id_loja&gt;001&lt;/id_loja&gt;
+        &lt;nome_loja&gt;Torre de Cristal&lt;/nome_loja&gt;
+        &lt;localizacao&gt;Planeta Zirak&lt;/localizacao&gt;
+        &lt;produto&gt;Cristais Místicos&lt;/produto&gt;
+        &lt;quantidade&gt;50&lt;/quantidade&gt;
+    &lt;/pedido&gt;
+&lt;/pedidos&gt;</code></pre>
 
                 <h6>Exemplo de Resposta</h6>
                 <pre class="bg-light p-3 rounded mb-3"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;

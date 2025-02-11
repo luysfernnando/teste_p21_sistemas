@@ -193,8 +193,8 @@
                                         <tr>
                                             <td><?= htmlspecialchars($integration['partner_name']) ?></td>
                                             <td>
-                                                <span class="badge bg-<?= $this->getStatusColor($integration['status']) ?>">
-                                                    <?= $this->getStatusLabel($integration['status']) ?>
+                                                <span class="badge bg-<?= $this->getIntegrationStatusColor($integration['status']) ?>">
+                                                    <?= $this->getIntegrationStatusLabel($integration['status']) ?>
                                                 </span>
                                             </td>
                                             <td><?= date('d/m/Y H:i', strtotime($integration['created_at'])) ?></td>
