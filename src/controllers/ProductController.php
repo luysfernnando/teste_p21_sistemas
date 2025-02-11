@@ -97,9 +97,9 @@ class ProductController extends BaseController {
 
         if ($this->isPost()) {
             $data = [
-                'name' => $this->getPost('name'),
-                'description' => $this->getPost('description'),
-                'price' => $this->getPost('price'),
+                'name' => trim($this->getPost('name')),
+                'description' => trim($this->getPost('description')),
+                'price' => str_replace(',', '.', $this->getPost('price')),
                 'stock' => $this->getPost('stock')
             ];
 
@@ -115,7 +115,7 @@ class ProductController extends BaseController {
 
                 if (!in_array($fileExtension, $allowedExtensions)) {
                     $this->setFlash('error', 'Formato de imagem inválido. Use JPG, PNG ou GIF.');
-                    $this->render('pages/products/edit', ['data' => $data]);
+                    $this->render('pages/products/edit', ['data' => array_merge($product, $data)]);
                     return;
                 }
 
@@ -133,7 +133,7 @@ class ProductController extends BaseController {
                     $data['image'] = 'uploads/products/' . $fileName;
                 } else {
                     $this->setFlash('error', 'Erro ao fazer upload da imagem.');
-                    $this->render('pages/products/edit', ['data' => $data]);
+                    $this->render('pages/products/edit', ['data' => array_merge($product, $data)]);
                     return;
                 }
             } else {
@@ -141,25 +141,29 @@ class ProductController extends BaseController {
                 $data['image'] = $product['image'];
             }
 
-            $errors = $this->validateRequired($data, ['name', 'price', 'stock']);
+            $errors = [];
             
-            if (!empty($errors)) {
-                $this->setFlash('error', 'Por favor, preencha todos os campos obrigatórios.');
-                $this->render('pages/products/edit', ['data' => $data, 'errors' => $errors]);
-                return;
+            // Validação do nome
+            if (empty($data['name'])) {
+                $errors['name'] = 'O nome é obrigatório.';
             }
 
+            // Validação do preço
             if (!is_numeric($data['price']) || $data['price'] <= 0) {
-                $errors['price'] = 'Preço inválido.';
-                $this->setFlash('error', 'Preço inválido.');
-                $this->render('pages/products/edit', ['data' => $data, 'errors' => $errors]);
-                return;
+                $errors['price'] = 'O preço deve ser um número maior que zero.';
             }
 
+            // Validação do estoque
             if (!is_numeric($data['stock']) || $data['stock'] < 0) {
-                $errors['stock'] = 'Quantidade inválida.';
-                $this->setFlash('error', 'Quantidade inválida.');
-                $this->render('pages/products/edit', ['data' => $data, 'errors' => $errors]);
+                $errors['stock'] = 'O estoque deve ser um número maior ou igual a zero.';
+            }
+
+            if (!empty($errors)) {
+                $this->setFlash('error', 'Por favor, corrija os erros no formulário.');
+                $this->render('pages/products/edit', [
+                    'data' => array_merge($product, $data),
+                    'errors' => $errors
+                ]);
                 return;
             }
 
@@ -169,7 +173,7 @@ class ProductController extends BaseController {
                 $this->redirect('produtos');
             } catch (PDOException $e) {
                 $this->setFlash('error', 'Erro ao atualizar produto.');
-                $this->render('pages/products/edit', ['data' => $data]);
+                $this->render('pages/products/edit', ['data' => array_merge($product, $data)]);
             }
             return;
         }
@@ -184,6 +188,18 @@ class ProductController extends BaseController {
         }
 
         try {
+            // Verifica se o produto está sendo usado em algum pedido
+            $orderItems = $this->db->query(
+                "SELECT COUNT(*) as count FROM order_items WHERE product_id = ?",
+                [$id]
+            )->fetch();
+
+            if ($orderItems['count'] > 0) {
+                $this->setFlash('error', 'Não é possível excluir este produto pois ele está vinculado a pedidos.');
+                $this->redirect('produtos');
+                return;
+            }
+
             // Busca o produto para obter a imagem
             $product = $this->db->query("SELECT image FROM products WHERE id = ?", [$id])->fetch();
             
@@ -197,7 +213,7 @@ class ProductController extends BaseController {
             $this->db->delete('products', 'id = ?', [$id]);
             $this->setFlash('success', 'Produto excluído com sucesso!');
         } catch (PDOException $e) {
-            $this->setFlash('error', 'Erro ao excluir produto.');
+            $this->setFlash('error', 'Erro ao excluir produto: ' . $e->getMessage());
         }
 
         $this->redirect('produtos');
