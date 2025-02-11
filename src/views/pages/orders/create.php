@@ -1,10 +1,12 @@
-<?php require_once ROOT_DIR . '/src/views/layouts/header.php'; ?>
-
-<div class="container py-4">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Novo Pedido</h1>
-        <a href="/pedidos" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-left"></i> Voltar
+        <h1>
+            <i class="fas fa-cart-plus text-primary"></i>
+            Novo Pedido
+        </h1>
+        <a href="<?= APP_URL ?>/pedidos" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            Voltar
         </a>
     </div>
 

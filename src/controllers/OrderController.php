@@ -186,7 +186,7 @@ class OrderController extends BaseController {
 
         if (!in_array($status, $validStatus)) {
             $this->setFlash('error', 'Status inválido');
-            $this->redirect('pedidos/view/' . $id);
+            $this->redirect('pedidos/visualizar/' . $id);
             return;
         }
 
@@ -237,7 +237,15 @@ class OrderController extends BaseController {
             // Envia e-mail de atualização de status se houver um e-mail
             if ($order['customer_email']) {
                 try {
-                    Mailer::getInstance()->sendOrderStatusUpdate($order);
+                    // Busca o template padrão de status
+                    $templateId = $this->db->query("SELECT value FROM settings WHERE name = 'status_template_id'")->fetchColumn();
+                    if ($templateId) {
+                        $template = $this->db->query("SELECT * FROM email_templates WHERE id = ?", [$templateId])->fetch();
+                        if ($template) {
+                            $order['body'] = $template['body']; // Adiciona o corpo do template ao pedido
+                            Mailer::getInstance()->sendOrderStatusUpdate($order);
+                        }
+                    }
                 } catch (Exception $e) {
                     error_log("Erro ao enviar e-mail de atualização de status: " . $e->getMessage());
                 }
@@ -251,6 +259,12 @@ class OrderController extends BaseController {
             $this->setFlash('error', 'Erro ao atualizar status: ' . $e->getMessage());
         }
 
-        $this->redirect('pedidos/view/' . $id);
+        // Redireciona de volta para a página apropriada
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        if (strpos($referer, '/pedidos/visualizar/') !== false) {
+            $this->redirect('pedidos/visualizar/' . $id);
+        } else {
+            $this->redirect('pedidos');
+        }
     }
 } 
