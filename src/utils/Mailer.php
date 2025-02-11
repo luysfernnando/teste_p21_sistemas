@@ -13,25 +13,41 @@ class Mailer {
     private function __construct() {
         $this->mailer = new PHPMailer(true);
         
+        // Configuração de debug mais detalhada
+        $this->mailer->SMTPDebug = SMTP::DEBUG_CONNECTION; // Alterado para ver detalhes da conexão
+        $this->mailer->Debugoutput = function($str, $level) {
+            error_log("[PHPMailer Debug][Level $level] $str");
+        };
+        
         // Configurações do servidor de e-mail
         $this->mailer->isSMTP();
         $this->mailer->Host = SMTP_HOST;
-        
-        // Configura autenticação apenas se houver credenciais
-        if (!empty(SMTP_USER) && !empty(SMTP_PASS)) {
-            $this->mailer->SMTPAuth = true;
-            $this->mailer->Username = SMTP_USER;
-            $this->mailer->Password = SMTP_PASS;
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        } else {
-            $this->mailer->SMTPAuth = false;
-        }
-        
         $this->mailer->Port = SMTP_PORT;
+        
+        // Configurações específicas para MailHog
+        $this->mailer->SMTPAuth = false;
+        $this->mailer->SMTPSecure = '';
+        $this->mailer->SMTPAutoTLS = false;
+        
+        // Timeout mais longo para debug
+        $this->mailer->Timeout = 20;
+        $this->mailer->SMTPKeepAlive = true;
+        
+        // Configurações de codificação
         $this->mailer->CharSet = 'UTF-8';
+        $this->mailer->Encoding = 'base64';
         
         // Configurações do remetente
         $this->mailer->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+        
+        // Verifica se consegue conectar ao servidor SMTP
+        try {
+            if (!$this->mailer->smtpConnect()) {
+                error_log("Erro ao conectar ao servidor SMTP: " . $this->mailer->ErrorInfo);
+            }
+        } catch (Exception $e) {
+            error_log("Exceção ao tentar conectar ao SMTP: " . $e->getMessage());
+        }
     }
 
     public static function getInstance() {
@@ -46,14 +62,28 @@ class Mailer {
      */
     public function send($to, $subject, $body, $isHtml = true) {
         try {
+            error_log("Iniciando envio de e-mail para: $to");
+            error_log("Usando servidor SMTP: " . SMTP_HOST . ":" . SMTP_PORT);
+            
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($to);
             $this->mailer->isHTML($isHtml);
             $this->mailer->Subject = $subject;
             $this->mailer->Body = $body;
             
-            return $this->mailer->send();
+            if (!$isHtml) {
+                $this->mailer->AltBody = $body;
+            } else {
+                $this->mailer->AltBody = strip_tags(str_replace('<br>', "\n", $body));
+            }
+            
+            $result = $this->mailer->send();
+            error_log("E-mail enviado com sucesso para: $to");
+            return $result;
+            
         } catch (Exception $e) {
+            error_log("Erro detalhado ao enviar e-mail: " . $this->mailer->ErrorInfo);
+            error_log("Stack trace: " . $e->getTraceAsString());
             throw new Exception('Erro ao enviar e-mail: ' . $e->getMessage());
         }
     }
@@ -121,16 +151,23 @@ class Mailer {
     public function sendOrderStatusUpdate($order) {
         try {
             $this->mailer->clearAddresses();
-            $this->mailer->addAddress($order['email'], $order['name']);
+            $this->mailer->addAddress($order['customer_email'], $order['customer_name']);
             $this->mailer->Subject = 'Atualização do Pedido #' . $order['order_number'];
             
-            // Corpo do e-mail
-            $body = "Olá {$order['name']},<br><br>";
-            $body .= "O status do seu pedido #{$order['order_number']} foi atualizado!<br><br>";
-            $body .= "Novo status: " . $this->getStatusLabel($order['status']) . "<br><br>";
-            $body .= "Para mais detalhes, acesse sua área do cliente em nosso site.<br><br>";
-            $body .= "Atenciosamente,<br>";
-            $body .= COMPANY_NAME;
+            // Substitui as variáveis no corpo do e-mail
+            $body = str_replace(
+                [
+                    '{nome_cliente}',
+                    '{numero_pedido}',
+                    '{status_pedido}'
+                ],
+                [
+                    $order['customer_name'],
+                    $order['order_number'],
+                    $this->getStatusLabel($order['status'])
+                ],
+                $order['body']
+            );
 
             $this->mailer->isHTML(true);
             $this->mailer->Body = $body;

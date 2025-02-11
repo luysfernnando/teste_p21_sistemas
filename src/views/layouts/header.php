@@ -76,6 +76,7 @@
                         'clientes' => ['icon' => 'fas fa-users', 'text' => 'Clientes'],
                         'produtos' => ['icon' => 'fas fa-box', 'text' => 'Produtos'],
                         'pedidos' => ['icon' => 'fas fa-shopping-cart', 'text' => 'Pedidos'],
+                        'comunicados' => ['icon' => 'fas fa-envelope', 'text' => 'Comunicados'],
                         'integracao' => ['icon' => 'fas fa-plug', 'text' => 'Integração']
                     ];
 

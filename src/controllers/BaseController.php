@@ -26,7 +26,8 @@ abstract class BaseController {
         if (DEBUG_MODE) {
             error_log('Redirecting to: ' . APP_URL . '/' . $url);
         }
-        header("Location: " . APP_URL . "/{$url}");
+        $url = ltrim($url, '/'); // Remove barras do início da URL
+        header("Location: " . rtrim(APP_URL, '/') . '/' . $url);
         exit;
     }
 

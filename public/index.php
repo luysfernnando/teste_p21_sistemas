@@ -16,6 +16,9 @@ function cleanUrl($url) {
 
 // Obter a URL atual
 $url = isset($_GET['url']) ? cleanUrl($_GET['url']) : '';
+if (empty($url) && isset($_SERVER['REQUEST_URI'])) {
+    $url = cleanUrl(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+}
 
 // Definir rotas
 $routes = [
@@ -32,13 +35,20 @@ $routes = [
     'pedidos' => ['controller' => 'OrderController', 'action' => 'index'],
     'pedidos/novo' => ['controller' => 'OrderController', 'action' => 'create'],
     'pedidos/importar' => ['controller' => 'OrderController', 'action' => 'import'],
-    'pedidos/view/(\d+)' => ['controller' => 'OrderController', 'action' => 'view'],
+    'pedidos/visualizar/(\d+)' => ['controller' => 'OrderController', 'action' => 'view'],
     'pedidos/status/(\d+)' => ['controller' => 'OrderController', 'action' => 'updateStatus'],
     'integracao' => ['controller' => 'IntegrationController', 'action' => 'index'],
     'integracao/receber' => ['controller' => 'IntegrationController', 'action' => 'receive'],
     'integracao/visualizar/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'view'],
     'integracao/reprocessar/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'reprocess'],
-    'integracao/excluir/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'delete']
+    'integracao/excluir/(\d+)' => ['controller' => 'IntegrationController', 'action' => 'delete'],
+    'comunicados' => ['controller' => 'CommunicationController', 'action' => 'index'],
+    'comunicados/criar-template' => ['controller' => 'CommunicationController', 'action' => 'createTemplate'],
+    'comunicados/editar-template/(\d+)' => ['controller' => 'CommunicationController', 'action' => 'editTemplate'],
+    'comunicados/enviar-email' => ['controller' => 'CommunicationController', 'action' => 'sendEmail'],
+    'comunicados/historico' => ['controller' => 'CommunicationController', 'action' => 'history'],
+    'comunicados/prever-template' => ['controller' => 'CommunicationController', 'action' => 'previewTemplate'],
+    'comunicados/salvar-configuracoes' => ['controller' => 'CommunicationController', 'action' => 'saveSettings']
 ];
 
 // Verificar se a rota existe
