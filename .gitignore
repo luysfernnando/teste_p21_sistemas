@@ -29,4 +29,9 @@ Thumbs.db
 /cache/
 
 # Arquivos de upload
+/public/uploads/
+/public/uploads/products/*
+!public/uploads/products/.gitkeep
+
+# Arquivos de upload
 /uploads/ 

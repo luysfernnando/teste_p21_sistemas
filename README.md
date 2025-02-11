@@ -1,30 +1,57 @@
-# Ambiente de Desenvolvimento PHP
+# Loja Mágica de Tecnologia
 
-Este é um ambiente de desenvolvimento PHP utilizando Docker, com os seguintes serviços:
-- PHP 8.3 FPM
-- Nginx
-- MySQL 8
+Sistema de gestão de clientes e pedidos para a Loja Mágica de Tecnologia.
+
+## Funcionalidades
+
+- Importação de clientes via planilha Excel
+- Gestão de clientes e pedidos
+- Sistema de comunicação por e-mail
+- Integração com lojas parceiras via XML
 
 ## Requisitos
-- Docker
-- Docker Compose
 
-## Como usar
+- Docker e Docker Compose
+- PHP 8.2 ou superior
+- MySQL 8
+- Servidor web (Nginx)
 
-1. Clone este repositório
-2. No terminal, execute:
+## Configuração do Ambiente
+
+1. Clone o repositório
+2. Execute o comando:
 ```bash
 docker-compose up -d
 ```
 
-3. Os serviços estarão disponíveis em:
-- Aplicação: http://localhost
-- MySQL: localhost:3306
-  - Database: app_db
-  - Usuário: app_user
-  - Senha: app_pass
+3. O sistema estará disponível em: http://localhost:80
 
-## Estrutura
-- Os arquivos do projeto devem ser colocados na raiz do diretório
-- A configuração do Nginx está em `docker/nginx/default.conf`
-- As configurações do Docker estão em `docker-compose.yml` e `Dockerfile`
+## Estrutura do Banco de Dados
+
+O arquivo SQL com a estrutura do banco de dados está disponível em `database/schema.sql`
+
+## Estrutura do Projeto
+
+```
+.
+├── src/                    # Código fonte PHP
+│   ├── config/            # Configurações
+│   ├── controllers/       # Controladores
+│   ├── models/           # Modelos
+│   ├── services/         # Serviços
+│   └── utils/            # Utilitários
+├── public/               # Arquivos públicos
+│   ├── css/             # Estilos
+│   ├── js/              # JavaScript
+│   └── index.php        # Ponto de entrada
+├── database/            # Scripts SQL
+├── uploads/             # Arquivos importados
+└── tests/               # Testes unitários
+```
+
+## Tecnologias Utilizadas
+
+- PHP 8.2 (sem frameworks)
+- HTML, CSS, JavaScript/jQuery
+- MySQL 8
+- Docker
