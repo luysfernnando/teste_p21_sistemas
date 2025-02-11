@@ -1,44 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <!-- Definição do elemento raiz -->
-    <xs:element name="orders">
+    <xs:element name="pedidos">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="order" maxOccurs="unbounded">
+                <xs:element name="pedido" maxOccurs="unbounded">
                     <xs:complexType>
                         <xs:sequence>
-                            <!-- Cliente -->
-                            <xs:element name="customer">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="name" type="xs:string"/>
-                                        <xs:element name="email" type="xs:string"/>
-                                        <xs:element name="phone" type="xs:string" minOccurs="0"/>
-                                        <xs:element name="address" type="xs:string" minOccurs="0"/>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                            
-                            <!-- Itens do Pedido -->
-                            <xs:element name="items">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="item" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element name="name" type="xs:string"/>
-                                                    <xs:element name="description" type="xs:string" minOccurs="0"/>
-                                                    <xs:element name="quantity" type="xs:positiveInteger"/>
-                                                    <xs:element name="price" type="xs:decimal"/>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                            
-                            <!-- Total do Pedido -->
-                            <xs:element name="total" type="xs:decimal"/>
+                            <xs:element name="id_loja" type="xs:string"/>
+                            <xs:element name="nome_loja" type="xs:string"/>
+                            <xs:element name="localizacao" type="xs:string"/>
+                            <xs:element name="produto" type="xs:string"/>
+                            <xs:element name="quantidade" type="xs:integer"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
