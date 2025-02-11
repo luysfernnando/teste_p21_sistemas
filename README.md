@@ -21,7 +21,8 @@ Sistema de gestão desenvolvido em PHP para gerenciamento de clientes, produtos,
 
 1. Clone o repositório:
 ```bash
-git clone [URL_DO_REPOSITORIO]
+git clone https://github.com/luysfernnando/teste_p21_sistemas.git
+
 cd teste_p21_sistemas
 ```
 
@@ -32,17 +33,12 @@ docker-compose up -d
 
 3. Execute as migrações do banco de dados:
 ```bash
-# Verificar status das migrações
-docker-compose exec php php bin/migrate status
-
-# Executar migrações pendentes
 docker-compose exec php php bin/migrate migrate
-
-# Caso necessário, reverter última migração
-docker-compose exec php php bin/migrate rollback
 ```
 
 4. Acesse o sistema em: http://localhost
+
+5. Acesse o MailHog em: http://localhost:8025
 
 ## 📦 Módulos
 
@@ -107,11 +103,14 @@ docker-compose exec php php bin/migrate rollback
 ## 🔌 Endpoints da API
 
 ### Recebimento de Pedidos
-```
-POST /integracao/receber
+```http
+POST http://localhost/integracao/receber
 Content-Type: application/xml
 X-Partner-Name: [NOME_DO_PARCEIRO]
+```
 
+#### Template XML
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <pedidos>
     <pedido>
@@ -122,6 +121,24 @@ X-Partner-Name: [NOME_DO_PARCEIRO]
         <quantidade>50</quantidade>
     </pedido>
 </pedidos>
+```
+
+#### Resposta de Sucesso
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <success>true</success>
+    <message>XML processado com sucesso</message>
+</response>
+```
+
+#### Resposta de Erro
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <success>false</success>
+    <message>Erro ao processar XML: [MENSAGEM_DE_ERRO]</message>
+</response>
 ```
 
 ## 🛠️ Comandos Úteis
@@ -162,9 +179,17 @@ docker-compose exec php bash
   - User: p21_user
   - Password: p21_pass
 
+
+## ⭐ Tecnologias Utilizadas
+
+- PHP 8.2 (Sem Frameworks)
+- HTML, CSS, JavaScript, jQuery
+- MySQL 8
+- Docker (Para execução do projeto)
+
 ## 📝 Notas Adicionais
 
 - O sistema utiliza o MailHog para interceptar e-mails em ambiente de desenvolvimento
 - Todos os e-mails enviados podem ser visualizados na interface do MailHog
-- As senhas e configurações sensíveis devem ser alteradas em ambiente de produção
-- Recomenda-se fazer backup do banco de dados antes de executar migrações
+- Garanta que não há processos rodando na porta 80 e 8025 para evitar conflitos com o nginx e o MailHog respectivamente.
+

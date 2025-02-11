@@ -26,7 +26,11 @@
     <div class="card">
         <div class="card-body">
             <?php if (empty($orders)): ?>
-                <p class="text-muted text-center mb-0">Nenhum pedido encontrado.</p>
+                <div class="text-center py-5">
+                    <i class="fas fa-cart-shopping text-muted mb-3" style="font-size: 48px;"></i>
+                    <h4 class="text-muted">Nenhum pedido cadastrado</h4>
+                    <p class="text-muted">Comece criando um novo pedido ou importando um arquivo XML.</p>
+                </div>
             <?php else: ?>
                 <div class="table-responsive">
                     <table class="table table-hover">
