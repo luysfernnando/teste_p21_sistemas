@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../src/config/config.php';
+require_once ROOT_DIR . '/src/utils/Migration.php';
+
+$migration = new Migration();
+
+$command = $argv[1] ?? 'help';
+
+switch ($command) {
+    case 'migrate':
+        $migration->migrate();
+        break;
+
+    case 'rollback':
+        $migration->rollback();
+        break;
+
+    case 'status':
+        $migration->status();
+        break;
+
+    case 'help':
+    default:
+        echo "Usage: php bin/migrate [command]\n\n";
+        echo "Available commands:\n";
+        echo "  migrate   Run all pending migrations\n";
+        echo "  rollback  Rollback the last batch of migrations\n";
+        echo "  status    Show the status of all migrations\n";
+        break;
+} 

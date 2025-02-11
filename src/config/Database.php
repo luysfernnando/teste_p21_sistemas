@@ -2,12 +2,28 @@
 
 class Database {
     private static $instance = null;
-    private $connection;
+    private $pdo;
 
     private function __construct() {
         try {
-            $this->connection = new PDO(
-                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+            // Primeiro verifica se o banco existe
+            $tempPdo = new PDO(
+                sprintf("mysql:host=%s", DB_HOST),
+                DB_USER,
+                DB_PASS,
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+
+            $stmt = $tempPdo->query("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" . DB_NAME . "'");
+            $exists = $stmt->fetch();
+
+            if (!$exists) {
+                throw new Exception("Database '" . DB_NAME . "' não existe. Execute 'php bin/migrate' para criar.");
+            }
+
+            // Se o banco existe, conecta normalmente
+            $this->pdo = new PDO(
+                sprintf("mysql:host=%s;dbname=%s", DB_HOST, DB_NAME),
                 DB_USER,
                 DB_PASS,
                 [
@@ -17,7 +33,7 @@ class Database {
                 ]
             );
         } catch (PDOException $e) {
-            die("Erro na conexão com o banco de dados: " . $e->getMessage());
+            throw new Exception("Erro de conexão com o banco: " . $e->getMessage());
         }
     }
 
@@ -28,20 +44,13 @@ class Database {
         return self::$instance;
     }
 
-    public function getConnection() {
-        return $this->connection;
-    }
-
     public function query($sql, $params = []) {
         try {
-            $stmt = $this->connection->prepare($sql);
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            if (DEBUG_MODE) {
-                die("Erro na query: " . $e->getMessage());
-            }
-            die("Ocorreu um erro no banco de dados.");
+            throw new Exception("Erro na query: " . $e->getMessage());
         }
     }
 
@@ -52,15 +61,15 @@ class Database {
         $sql = "INSERT INTO {$table} ({$fields}) VALUES ({$placeholders})";
         
         $this->query($sql, array_values($data));
-        return $this->connection->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
 
     public function update($table, $data, $where, $whereParams = []) {
-        $fields = array_map(function($field) {
+        $set = implode(', ', array_map(function($field) {
             return "{$field} = ?";
-        }, array_keys($data));
+        }, array_keys($data)));
         
-        $sql = "UPDATE {$table} SET " . implode(', ', $fields) . " WHERE {$where}";
+        $sql = "UPDATE {$table} SET {$set} WHERE {$where}";
         
         $params = array_merge(array_values($data), $whereParams);
         return $this->query($sql, $params);
@@ -69,6 +78,27 @@ class Database {
     public function delete($table, $where, $params = []) {
         $sql = "DELETE FROM {$table} WHERE {$where}";
         return $this->query($sql, $params);
+    }
+
+    public function beginTransaction() {
+        if (!$this->pdo->inTransaction()) {
+            return $this->pdo->beginTransaction();
+        }
+        return true;
+    }
+
+    public function commit() {
+        if ($this->pdo->inTransaction()) {
+            return $this->pdo->commit();
+        }
+        return true;
+    }
+
+    public function rollBack() {
+        if ($this->pdo->inTransaction()) {
+            return $this->pdo->rollBack();
+        }
+        return true;
     }
 
     private function __clone() {}
