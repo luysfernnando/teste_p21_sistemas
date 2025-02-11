@@ -24,6 +24,15 @@ define('MAIL_PASS', 'sua-senha');
 define('MAIL_FROM', 'noreply@lojamagica.com');
 define('MAIL_FROM_NAME', 'Loja Mágica de Tecnologia');
 
+// Configurações de E-mail
+define('SMTP_HOST', 'mailhog');
+define('SMTP_PORT', 1025);
+define('SMTP_USER', '');  // MailHog não precisa de autenticação
+define('SMTP_PASS', '');  // MailHog não precisa de autenticação
+define('SMTP_FROM_EMAIL', 'noreply@p21sistemas.com.br');
+define('SMTP_FROM_NAME', 'P21 Sistemas');
+define('COMPANY_NAME', 'P21 Sistemas');
+
 // Configurações de Debug
 define('DEBUG_MODE', true);
 error_reporting(DEBUG_MODE ? E_ALL : 0);
@@ -43,12 +52,20 @@ function dd($data) {
 
 // Função para carregar classes automaticamente
 spl_autoload_register(function ($class) {
-    $prefix = '';
-    $base_dir = ROOT_DIR . '/src/';
-    
-    $file = $base_dir . str_replace('\\', '/', $class) . '.php';
-    
-    if (file_exists($file)) {
-        require $file;
+    // Lista de diretórios onde procurar as classes
+    $directories = [
+        ROOT_DIR . '/src/controllers/',
+        ROOT_DIR . '/src/models/',
+        ROOT_DIR . '/src/utils/',
+        ROOT_DIR . '/src/config/'
+    ];
+
+    // Procura a classe em cada diretório
+    foreach ($directories as $directory) {
+        $file = $directory . $class . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
     }
 }); 

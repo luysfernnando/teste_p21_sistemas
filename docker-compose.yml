@@ -8,6 +8,9 @@ services:
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     networks:
       - app-network
+    depends_on:
+      - mysql
+      - mailhog
 
   nginx:
     image: nginx:alpine
@@ -34,6 +37,12 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
 
 networks:
   app-network:

@@ -101,6 +101,10 @@ class Database {
         return true;
     }
 
+    public function inTransaction() {
+        return $this->pdo->inTransaction();
+    }
+
     private function __clone() {}
     public function __wakeup() {}
 } 

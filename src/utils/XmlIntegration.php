@@ -8,6 +8,20 @@ class XmlIntegration {
     }
 
     /**
+     * Valida um XML contra um schema XSD
+     */
+    public function validateXml($xmlString, $schemaPath) {
+        $xml = new DOMDocument();
+        $xml->loadXML($xmlString);
+
+        if (!$xml->schemaValidate($schemaPath)) {
+            throw new Exception('XML inválido: não está de acordo com o schema XSD');
+        }
+
+        return true;
+    }
+
+    /**
      * Processa um arquivo XML de pedidos
      */
     public function processOrderXml($xmlString, $partnerName) {
@@ -23,7 +37,7 @@ class XmlIntegration {
             $xml = new SimpleXMLElement($xmlString);
             
             // Processa cada pedido
-            foreach ($xml->order as $orderXml) {
+            foreach ($xml->pedido as $orderXml) {
                 $this->processOrder($orderXml);
             }
 
@@ -52,90 +66,49 @@ class XmlIntegration {
      * Processa um pedido do XML
      */
     private function processOrder($orderXml) {
-        // Verifica se o cliente existe
-        $customer = $this->getOrCreateCustomer($orderXml->customer);
+        try {
+            // Busca ou cria o produto
+            $product = $this->getOrCreateProduct([
+                'name' => (string)$orderXml->produto,
+                'price' => 0, // Preço será definido posteriormente
+                'stock' => 0  // Estoque será atualizado posteriormente
+            ]);
 
-        // Cria o pedido
-        $orderData = [
-            'customer_id' => $customer['id'],
-            'order_number' => Helpers::generateOrderNumber(),
-            'total_amount' => (float)$orderXml->total,
-            'status' => 'pending'
-        ];
+            // Cria o pedido
+            $orderData = [
+                'store_id' => (string)$orderXml->id_loja,
+                'store_name' => (string)$orderXml->nome_loja,
+                'store_location' => (string)$orderXml->localizacao,
+                'order_number' => $this->generateOrderNumber(),
+                'total_amount' => 0, // Será calculado após definir o preço do produto
+                'total_quantity' => (int)$orderXml->quantidade,
+                'status' => 'pending'
+            ];
 
-        $orderId = $this->db->insert('orders', $orderData);
+            $orderId = $this->db->insert('orders', $orderData);
 
-        // Processa os itens do pedido
-        foreach ($orderXml->items->item as $item) {
-            $product = $this->getOrCreateProduct($item);
-
+            // Cria o item do pedido
             $this->db->insert('order_items', [
                 'order_id' => $orderId,
                 'product_id' => $product['id'],
-                'quantity' => (int)$item->quantity,
-                'unit_price' => (float)$item->price
+                'quantity' => (int)$orderXml->quantidade,
+                'unit_price' => 0 // Preço será definido posteriormente
             ]);
-        }
 
-        // Envia e-mail de confirmação
-        try {
-            $order = $orderData;
-            $order['id'] = $orderId;
-            Mailer::getInstance()->sendOrderConfirmation($order, $customer);
         } catch (Exception $e) {
-            // Log do erro de envio de e-mail
-            error_log("Erro ao enviar e-mail de confirmação: " . $e->getMessage());
+            error_log("Erro ao processar pedido: " . $e->getMessage());
+            throw $e;
         }
-    }
-
-    /**
-     * Busca ou cria um cliente
-     */
-    private function getOrCreateCustomer($customerXml) {
-        $email = (string)$customerXml->email;
-        
-        // Tenta encontrar o cliente
-        $customer = $this->db->query(
-            "SELECT * FROM customers WHERE email = ?",
-            [$email]
-        )->fetch();
-
-        if ($customer) {
-            return $customer;
-        }
-
-        // Cria um novo cliente
-        $customerData = [
-            'name' => (string)$customerXml->name,
-            'email' => $email,
-            'phone' => (string)$customerXml->phone,
-            'address' => (string)$customerXml->address
-        ];
-
-        $customerId = $this->db->insert('customers', $customerData);
-        $customerData['id'] = $customerId;
-
-        // Envia e-mail de boas-vindas
-        try {
-            Mailer::getInstance()->sendWelcomeEmail($customerData);
-        } catch (Exception $e) {
-            // Log do erro de envio de e-mail
-            error_log("Erro ao enviar e-mail de boas-vindas: " . $e->getMessage());
-        }
-
-        return $customerData;
     }
 
     /**
      * Busca ou cria um produto
      */
-    private function getOrCreateProduct($itemXml) {
-        $name = (string)$itemXml->name;
-        
+    private function getOrCreateProduct($data) {
         // Tenta encontrar o produto
         $product = $this->db->query(
             "SELECT * FROM products WHERE name = ?",
-            [$name]
+            [$data['name']]
         )->fetch();
 
         if ($product) {
@@ -143,17 +116,24 @@ class XmlIntegration {
         }
 
         // Cria um novo produto
-        $productData = [
-            'name' => $name,
-            'description' => (string)$itemXml->description,
-            'price' => (float)$itemXml->price,
-            'stock' => 0
-        ];
+        $productId = $this->db->insert('products', [
+            'name' => $data['name'],
+            'description' => 'Importado via XML',
+            'price' => $data['price'],
+            'stock' => $data['stock']
+        ]);
 
-        $productId = $this->db->insert('products', $productData);
-        $productData['id'] = $productId;
+        $data['id'] = $productId;
+        return $data;
+    }
 
-        return $productData;
+    /**
+     * Gera um número único para o pedido
+     */
+    private function generateOrderNumber() {
+        $prefix = date('Ymd');
+        $sequence = mt_rand(1000, 9999);
+        return $prefix . $sequence;
     }
 
     /**
@@ -173,29 +153,5 @@ class XmlIntegration {
         }
 
         return $xml->asXML();
-    }
-
-    /**
-     * Valida um XML contra um schema XSD
-     */
-    public function validateXml($xmlString, $xsdPath) {
-        libxml_use_internal_errors(true);
-        
-        $xml = new DOMDocument();
-        $xml->loadXML($xmlString);
-        
-        if (!$xml->schemaValidate($xsdPath)) {
-            $errors = libxml_get_errors();
-            libxml_clear_errors();
-            
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[] = $error->message;
-            }
-            
-            throw new Exception("Erro de validação XML: " . implode("; ", $errorMessages));
-        }
-        
-        return true;
     }
 } 
